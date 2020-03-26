@@ -2,6 +2,7 @@ import datetime
 import re
 import requests
 import itertools
+import os
 
 import xml.etree.ElementTree as xml
 
@@ -171,12 +172,23 @@ class PubMed(object):
             url="/entrez/eutils/efetch.fcgi", parameters=parameters, output="xml"
         )
 
+        with open('response.xml', 'w') as fp:
+            fp.write(response)
+
         # Remove html markup tags (<i>, <sub>, <sup>, <b>, etc.) to prevent
         # title and abstract truncation
         response = re.sub("<[/ ]*[a-z]{1,3}>|</?mml:.+?>", "", response)
 
         # Parse as XML
-        root = xml.fromstring(response)
+        try:
+            root = xml.fromstring(response)
+        except xml.ParseError as err:
+            os.rename('response.xml', 'response_pre-ParseError.xml')
+            print(err)
+            print('Dumping responses')
+            with open('response_post-sub-ParseError.xml', 'w') as fp:
+                fp.write(response)
+            raise
 
         # Loop over the articles and construct article objects
         for article in root.iter("PubmedArticle"):
