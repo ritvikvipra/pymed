@@ -13,6 +13,7 @@ class PubMedBookArticle(object):
 
     __slots__ = (
         "pubmed_id",
+        "book",
         "title",
         "abstract",
         "publication_date",
@@ -49,8 +50,12 @@ class PubMedBookArticle(object):
         path = ".//ArticleId[@IdType='pubmed']"
         return getContent(element=xml_element, path=path)
 
-    def _extractTitle(self: object, xml_element: TypeVar("Element")) -> str:
+    def _extractBook(self: object, xml_element: TypeVar("Element")) -> str:
         path = ".//BookTitle"
+        return getContent(element=xml_element, path=path)
+
+    def _extractTitle(self: object, xml_element: TypeVar("Element")) -> str:
+        path = ".//ArticleTitle"
         return getContent(element=xml_element, path=path)
 
     def _extractAbstract(self: object, xml_element: TypeVar("Element")) -> str:
@@ -115,6 +120,7 @@ class PubMedBookArticle(object):
 
         # Parse the different fields of the article
         self.pubmed_id = self._extractPubMedId(xml_element)
+        self.book = self._extractBook(xml_element)
         self.title = self._extractTitle(xml_element)
         self.abstract = self._extractAbstract(xml_element)
         self.copyrights = self._extractCopyrights(xml_element)
