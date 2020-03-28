@@ -17,6 +17,7 @@ class PubMedArticle(object):
         "title",
         "abstract",
         "keywords",
+        "publication_type",
         "journal",
         "publication_date",
         "authors",
@@ -63,6 +64,10 @@ class PubMedArticle(object):
     def _extractJournal(self: object, xml_element: TypeVar("Element")) -> str:
         path = ".//Journal/Title"
         return getContent(element=xml_element, path=path)
+
+    def _extractPublicationType(self: object, xml_element: TypeVar("Element")) -> str:
+        path = ".//PublicationType"
+        return tuple(getContent(element=xml_element, path=path).splitlines())
 
     def _extractAbstract(self: object, xml_element: TypeVar("Element")) -> str:
         path = ".//AbstractText"
@@ -130,6 +135,7 @@ class PubMedArticle(object):
         self.title = self._extractTitle(xml_element)
         self.keywords = self._extractKeywords(xml_element)
         self.journal = self._extractJournal(xml_element)
+        self.publication_type = self._extractPublicationType(xml_element)
         self.abstract = self._extractAbstract(xml_element)
         self.conclusions = self._extractConclusions(xml_element)
         self.methods = self._extractMethods(xml_element)
