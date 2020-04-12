@@ -22,7 +22,8 @@ class PubMed(object):
     """
 
     def __init__(
-        self: object, tool: str = "my_tool", email: str = "my_email@example.com"
+        self: object, tool: str = "my_tool", email: str = "my_email@example.com",
+        debug_dump_xml: bool = False,
     ) -> None:
         """ Initialization of the object.
 
@@ -47,6 +48,10 @@ class PubMed(object):
 
         # Define the standard / default query parameters
         self.parameters = {"tool": tool, "email": email, "db": "pubmed"}
+
+        # If True, it dumps the retrieved xml on disk
+        # (the last batch of 250 papers -> see the 'query' method).
+        self.debug_dump_xml = debug_dump_xml
 
     def query(self: object, query: str, max_results: int = 100):
         """ Method that executes a query agains the GraphQL schema, automatically
@@ -172,8 +177,10 @@ class PubMed(object):
             url="/entrez/eutils/efetch.fcgi", parameters=parameters, output="xml"
         )
 
-        with open('response.xml', 'w') as fp:
-            fp.write(response)
+        if self.debug_dump_xml:
+            # NB: it dumps only the current batch
+            with open('response.xml', 'w') as fp:
+                fp.write(response)
 
         # Remove html markup tags (<i>, <sub>, <sup>, <b>, etc.) to prevent
         # title and abstract truncation
