@@ -1,6 +1,8 @@
 import datetime
+import re
 import requests
 import itertools
+import os
 
 import xml.etree.ElementTree as xml
 
@@ -20,7 +22,8 @@ class PubMed(object):
     """
 
     def __init__(
-        self: object, tool: str = "my_tool", email: str = "my_email@example.com"
+        self: object, tool: str = "my_tool", email: str = "my_email@example.com",
+        debug_dump_xml: bool = False,
     ) -> None:
         """ Initialization of the object.
 
@@ -45,6 +48,10 @@ class PubMed(object):
 
         # Define the standard / default query parameters
         self.parameters = {"tool": tool, "email": email, "db": "pubmed"}
+
+        # If True, it dumps the retrieved xml on disk
+        # (the last batch of 250 papers -> see the 'query' method).
+        self.debug_dump_xml = debug_dump_xml
 
     def query(self: object, query: str, max_results: int = 100):
         """ Method that executes a query agains the GraphQL schema, automatically
@@ -170,8 +177,25 @@ class PubMed(object):
             url="/entrez/eutils/efetch.fcgi", parameters=parameters, output="xml"
         )
 
+        if self.debug_dump_xml:
+            # NB: it dumps only the current batch
+            with open('response.xml', 'w') as fp:
+                fp.write(response)
+
+        # Remove html markup tags (<i>, <sub>, <sup>, <b>, etc.) to prevent
+        # title and abstract truncation
+        response = re.sub("<[/ ]*[a-z]{1,3}>|</?mml:.+?>", "", response)
+
         # Parse as XML
-        root = xml.fromstring(response)
+        try:
+            root = xml.fromstring(response)
+        except xml.ParseError as err:
+            os.rename('response.xml', 'response_pre-ParseError.xml')
+            print(err)
+            print('Dumping responses')
+            with open('response_post-sub-ParseError.xml', 'w') as fp:
+                fp.write(response)
+            raise
 
         # Loop over the articles and construct article objects
         for article in root.iter("PubmedArticle"):

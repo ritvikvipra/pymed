@@ -17,6 +17,7 @@ class PubMedArticle(object):
         "title",
         "abstract",
         "keywords",
+        "publication_type",
         "journal",
         "publication_date",
         "authors",
@@ -47,7 +48,7 @@ class PubMedArticle(object):
                 self.__setattr__(field, kwargs.get(field, None))
 
     def _extractPubMedId(self: object, xml_element: TypeVar("Element")) -> str:
-        path = ".//PubmedData/ArticleIdList/ArticleId[@IdType='pubmed']"
+        path = "MedlineCitation/PMID"
         return getContent(element=xml_element, path=path)
 
     def _extractTitle(self: object, xml_element: TypeVar("Element")) -> str:
@@ -64,20 +65,32 @@ class PubMedArticle(object):
         path = ".//Journal/Title"
         return getContent(element=xml_element, path=path)
 
+    def _extractPublicationType(self: object, xml_element: TypeVar("Element")) -> str:
+        path = ".//PublicationType"
+        return tuple(getContent(element=xml_element, path=path).splitlines())
+
     def _extractAbstract(self: object, xml_element: TypeVar("Element")) -> str:
-        path = ".//AbstractText"
+        # Specifying .//Abstract/AbstractText instead of .//AbstractText allows
+        # to avoid to get OtherAbstract/AbstractText (non-english languages)
+        path = ".//Abstract/AbstractText"
         return getContent(element=xml_element, path=path)
 
     def _extractConclusions(self: object, xml_element: TypeVar("Element")) -> str:
-        path = ".//AbstractText[@Label='CONCLUSION']"
+        # Specifying .//Abstract/AbstractText instead of .//AbstractText allows
+        # to avoid to get OtherAbstract/AbstractText (non-english languages)
+        path = ".//Abstract/AbstractText[@Label='CONCLUSION']"
         return getContent(element=xml_element, path=path)
 
     def _extractMethods(self: object, xml_element: TypeVar("Element")) -> str:
-        path = ".//AbstractText[@Label='METHOD']"
+        # Specifying .//Abstract/AbstractText instead of .//AbstractText allows
+        # to avoid to get OtherAbstract/AbstractText (non-english languages)
+        path = ".//Abstract/AbstractText[@Label='METHOD']"
         return getContent(element=xml_element, path=path)
 
     def _extractResults(self: object, xml_element: TypeVar("Element")) -> str:
-        path = ".//AbstractText[@Label='RESULTS']"
+        # Specifying .//Abstract/AbstractText instead of .//AbstractText allows
+        # to avoid to get OtherAbstract/AbstractText (non-english languages)
+        path = ".//Abstract/AbstractText[@Label='RESULTS']"
         return getContent(element=xml_element, path=path)
 
     def _extractCopyrights(self: object, xml_element: TypeVar("Element")) -> str:
@@ -130,6 +143,7 @@ class PubMedArticle(object):
         self.title = self._extractTitle(xml_element)
         self.keywords = self._extractKeywords(xml_element)
         self.journal = self._extractJournal(xml_element)
+        self.publication_type = self._extractPublicationType(xml_element)
         self.abstract = self._extractAbstract(xml_element)
         self.conclusions = self._extractConclusions(xml_element)
         self.methods = self._extractMethods(xml_element)

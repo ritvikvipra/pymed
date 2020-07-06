@@ -13,8 +13,10 @@ class PubMedBookArticle(object):
 
     __slots__ = (
         "pubmed_id",
+        "book",
         "title",
         "abstract",
+        "keywords",
         "publication_date",
         "authors",
         "copyrights",
@@ -49,13 +51,23 @@ class PubMedBookArticle(object):
         path = ".//ArticleId[@IdType='pubmed']"
         return getContent(element=xml_element, path=path)
 
-    def _extractTitle(self: object, xml_element: TypeVar("Element")) -> str:
+    def _extractBook(self: object, xml_element: TypeVar("Element")) -> str:
         path = ".//BookTitle"
+        return getContent(element=xml_element, path=path)
+
+    def _extractTitle(self: object, xml_element: TypeVar("Element")) -> str:
+        path = ".//ArticleTitle"
         return getContent(element=xml_element, path=path)
 
     def _extractAbstract(self: object, xml_element: TypeVar("Element")) -> str:
         path = ".//AbstractText"
         return getContent(element=xml_element, path=path)
+
+    def _extractKeywords(self: object, xml_element: TypeVar("Element")) -> str:
+        path = ".//Keyword"
+        return [
+            keyword.text for keyword in xml_element.findall(path) if keyword is not None
+        ]
 
     def _extractCopyrights(self: object, xml_element: TypeVar("Element")) -> str:
         path = ".//CopyrightInformation"
@@ -115,8 +127,10 @@ class PubMedBookArticle(object):
 
         # Parse the different fields of the article
         self.pubmed_id = self._extractPubMedId(xml_element)
+        self.book = self._extractBook(xml_element)
         self.title = self._extractTitle(xml_element)
         self.abstract = self._extractAbstract(xml_element)
+        self.keywords = self._extractKeywords(xml_element)
         self.copyrights = self._extractCopyrights(xml_element)
         self.doi = self._extractDoi(xml_element)
         self.isbn = self._extractIsbn(xml_element)

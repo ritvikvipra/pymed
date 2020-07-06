@@ -30,3 +30,21 @@ The original documentation of the PubMed API can be found here: [PubMed Central]
 
 ## Notice of Non-Affiliation and Disclaimer 
 The author of this library is not affiliated, associated, authorized, endorsed by, or in any way officially connected with PubMed, or any of its subsidiaries or its affiliates. The official PubMed website can be found at https://www.ncbi.nlm.nih.gov/pubmed/.
+
+## Information about this fork
+
+Fixes:
+
+* PMID issue (https://github.com/gijswobben/pymed/issues/22): fixed. The `paper.pubmed_id` attribute is now correct.
+* Incomplete titles and/or abstracts (https://github.com/gijswobben/pymed/issues/23): fixed in most of cases.
+* Retrieves only the english version of abstracts (some papers have multiple version for different languages).
+
+Features:
+
+* Adds `publication_type` field to PubMedArticle (it is a list since there are more types for each article).
+* Adds `keyowrds` field to the `PubMedBookArticle`.
+* Improves `PubMedBookArticle` title semantics.
+
+Debugging:
+
+* Adds a debug_dump_xml flag to dump the retrieved xml; it's also saved in case of xml ParseError.
